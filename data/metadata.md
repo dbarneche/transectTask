@@ -5,7 +5,7 @@ The data comprise four responses (columns `y`, `y2`, `y3` and `y4`) that represe
 
 There are four regions (column `Region`) representing four separate jurisdictions or management areas. Within each region there are 10 sites (column `Site`), half of which are managed according to one strategy (column `Management`: `a`) and the other half are managed according to an alternative strategy (`Management`: `b`). It is important to note that:  
 
-- The sites themselves are blocked such that within each block there are two sites of each management strategy;  
+- The sites themselves are blocked (column `Block`) such that within each block there are two sites of each management strategy;  
 
 - Hence within each region there are five blocks. The blocks represent a design decision to group together sets of sites from each management strategy in an attempt to reduce the unexplained variability due to the expected underlying spatial heterogeneity;  
 
