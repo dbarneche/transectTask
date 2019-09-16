@@ -1,7 +1,7 @@
 # Dataset for spatio-temporal analysis of the effects of management strategies on the abundance of marine organisms
 ## data/data.csv  
 ### General description  
-The data comprise four responses (columns `y`, `y2`, `y3` and `y4`) that represent counts (abundance) of four different marine taxa. These counts are collected along fixed length transects permanently marked to permit revisiting over time.  
+The data comprise four responses that represent counts (abundance) of four different marine reef fish (columns `damsel`, `wrasse`, `parrotfish` and `grouper`). These counts are collected along fixed length transects permanently marked to permit revisiting over time.  
 
 There are four regions (column `Region`) representing four separate jurisdictions or management areas. Within each region there are 10 sites (column `Site`), half of which are managed according to one strategy (column `Management`: `a`) and the other half are managed according to an alternative strategy (`Management`: `b`). It is important to note that:  
 
