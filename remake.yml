@@ -1,0 +1,141 @@
+packages:
+  - LoLinR
+  - rmarkdown
+  - plyr
+  - bbmle # for AICtab
+  - glmmTMB
+  - brms
+  - effects
+  - ggplot2
+  - tidyr
+  - dplyr
+  - ggsci
+  - png
+  - grid
+
+sources:
+  - R/analysis.R
+  - R/figures.R
+  - R/latex.R
+
+targets:
+  all:
+    depends:
+      - output/doc/report.pdf
+
+  # Data -------------------------------------------------
+  data:
+    command: readAndModifyData('data/data.csv')
+
+  # Analysis ---------------------------------------------
+  brmsDamselModel:
+    command: runBrmsDamselModel(data)
+
+  TMBModelsDamsel:
+    command: runTMBModels(data, response = I('damsel'))
+
+  bestTMBDamselModel:
+    command: extractBestTMBModel(TMBModelsDamsel)
+
+  TMBModelsWrasse:
+    command: runTMBModels(data, response = I('wrasse'))
+
+  bestTMBWrasseModel:
+    command: extractBestTMBModel(TMBModelsWrasse)
+
+  TMBModelsParrotfish:
+    command: runTMBModels(data, response = I('parrotfish'))
+
+  bestTMBParrotfishModel:
+    command: extractBestTMBModel(TMBModelsParrotfish)
+
+  TMBModelsGrouper:
+    command: runTMBModels(data, response = I('grouper'))
+
+  # Figures ----------------------------------------------
+  output/figures/exploratoryTrends.pdf:
+    command: makeExploratoryTrends(dest = target_name, data)
+
+  output/figures/exploratoryTrends.png:
+    command: generatePngs(I('output/figures/exploratoryTrends.pdf'))
+    depends: output/figures/exploratoryTrends.pdf
+
+  output/figures/exploratoryHistograms.pdf:
+    command: makeExploratoryHistograms(dest = target_name, data)
+
+  output/figures/exploratoryHistograms.png:
+    command: generatePngs(I('output/figures/exploratoryHistograms.pdf'))
+    depends: output/figures/exploratoryHistograms.pdf
+
+  output/figures/damselManagementPanel.pdf:
+    command: makeManagementPanel(dest = target_name, bestTMBDamselModel, data, picPath = I('pics/damsel.png'), ymin = 30, ymax = 38)
+
+  output/figures/damselManagementPanel.png:
+    command: generatePngs(I('output/figures/damselManagementPanel.pdf'))
+    depends: output/figures/damselManagementPanel.pdf
+
+  output/figures/damselManagementPanelBrms.pdf:
+    command: makeManagementPanelBrms(dest = target_name, brmsDamselModel, picPath = I('pics/damsel.png'), ymin = I(log10(12)), ymax = I(log10(60)))
+
+  output/figures/damselManagementPanelBrms.png:
+    command: generatePngs(I('output/figures/damselManagementPanelBrms.pdf'))
+    depends: output/figures/damselManagementPanelBrms.pdf
+
+  output/figures/damselPosteriorDistsFixed.pdf:
+    command: makePosteriorDists(dest = target_name, brmsDamselModel, pars = I('^b_'))
+
+  output/figures/damselPosteriorDistsFixed.png:
+    command: generatePngs(I('output/figures/damselPosteriorDistsFixed.pdf'))
+    depends: output/figures/damselPosteriorDistsFixed.pdf
+
+  output/figures/damselPosteriorDistsRandom.pdf:
+    command: makePosteriorDists(dest = target_name, brmsDamselModel, pars = I(c('shape', 'zi', '^sd_')))
+
+  output/figures/damselPosteriorDistsRandom.png:
+    command: generatePngs(I('output/figures/damselPosteriorDistsRandom.pdf'))
+    depends: output/figures/damselPosteriorDistsRandom.pdf
+
+  output/figures/wrasseManagementPanel.pdf:
+    command: makeManagementPanel(dest = target_name, bestTMBWrasseModel, data, picPath = I('pics/wrasse.png'), ymin = 28, ymax = 36)
+
+  output/figures/wrasseManagementPanel.png:
+    command: generatePngs(I('output/figures/wrasseManagementPanel.pdf'))
+    depends: output/figures/wrasseManagementPanel.pdf
+
+  output/figures/parrotfishManagementPanel.pdf:
+    command: makeManagementPanel(dest = target_name, bestTMBParrotfishModel, data, picPath = I('pics/parrotfish.png'), ymin = 44, ymax = 49)
+
+  output/figures/parrotfishManagementPanel.png:
+    command: generatePngs(I('output/figures/parrotfishManagementPanel.pdf'))
+    depends: output/figures/parrotfishManagementPanel.pdf
+
+  # Report -----------------------------------------------
+  doc/report.md:
+    depends:
+      - data
+      - bestTMBDamselModel
+      - bestTMBWrasseModel
+      - bestTMBParrotfishModel
+      - TMBModelsGrouper # no convergence
+    knitr: TRUE
+
+  output/doc/report.tex:
+    command: pandoc_convert('doc/report.md', output = target_name, wd = I('.'), options = I(c('--bibliography', 'doc/references.bib', '--csl', 'doc/style.csl', '--standalone', '--template', 'doc/template.latex',  '--latex-engine', 'xelatex')))
+    depends:
+      - doc/template.latex
+      - doc/style.csl
+      - doc/references.bib
+
+  output/doc/report.pdf:
+    command: latexBuildClean('output/doc/report.tex', engine = I('xelatex'))
+    depends:
+      - brmsDamselModel
+      - bestTMBDamselModel
+      - output/figures/exploratoryTrends.png
+      - output/figures/exploratoryHistograms.png
+      - output/figures/damselManagementPanelBrms.png
+      - output/figures/damselPosteriorDistsFixed.png
+      - output/figures/damselPosteriorDistsRandom.png
+      - output/figures/damselManagementPanel.png
+      - output/figures/wrasseManagementPanel.png
+      - output/figures/parrotfishManagementPanel.png
